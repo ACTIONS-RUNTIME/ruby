@@ -2614,7 +2614,8 @@ rb_simple_iseq_p(const rb_iseq_t *iseq)
            ISEQ_BODY(iseq)->param.flags.has_kwrest == FALSE &&
            ISEQ_BODY(iseq)->param.flags.accepts_no_kwarg == FALSE &&
            ISEQ_BODY(iseq)->param.flags.forwardable == FALSE &&
-           ISEQ_BODY(iseq)->param.flags.has_block == FALSE;
+           ISEQ_BODY(iseq)->param.flags.has_block == FALSE &&
+           ISEQ_BODY(iseq)->param.flags.accepts_no_block == FALSE;
 }
 
 bool
@@ -2627,7 +2628,8 @@ rb_iseq_only_optparam_p(const rb_iseq_t *iseq)
            ISEQ_BODY(iseq)->param.flags.has_kwrest == FALSE &&
            ISEQ_BODY(iseq)->param.flags.accepts_no_kwarg == FALSE &&
            ISEQ_BODY(iseq)->param.flags.forwardable == FALSE &&
-           ISEQ_BODY(iseq)->param.flags.has_block == FALSE;
+           ISEQ_BODY(iseq)->param.flags.has_block == FALSE &&
+           ISEQ_BODY(iseq)->param.flags.accepts_no_block == FALSE;
 }
 
 bool

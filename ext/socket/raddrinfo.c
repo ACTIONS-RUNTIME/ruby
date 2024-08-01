@@ -484,23 +484,9 @@ do_pthread_create(pthread_t *th, void *(*start_routine) (void *), void *arg)
 }
 
 static void *
-async_getaddrinfo(void *ptr)
+fork_safe_do_getaddrinfo(void *ptr)
 {
-    struct getaddrinfo_arg *arg = (struct getaddrinfo_arg *)ptr;
-    pthread_t th;
-    if (do_pthread_create(&th, do_getaddrinfo, arg) != 0) {
-        return (void *)EAI_AGAIN;
-    }
-    pthread_detach(th);
-
-    rb_thread_call_without_gvl2(wait_getaddrinfo, arg, cancel_getaddrinfo, arg);
-    return NULL;
-}
-
-static void *
-fork_safe_async_getaddrinfo(void *ptr)
-{
-    return rb_thread_prevent_fork(async_getaddrinfo, ptr);
+    return rb_thread_prevent_fork(do_getaddrinfo, ptr);
 }
 
 static int
@@ -518,7 +504,16 @@ start:
         return EAI_MEMORY;
     }
 
-    fork_safe_async_getaddrinfo(arg);
+    pthread_t th;
+    if (do_pthread_create(&th, fork_safe_do_getaddrinfo, arg) != 0) {
+        int err = errno;
+        free_getaddrinfo_arg(arg);
+        errno = err;
+        return EAI_SYSTEM;
+    }
+    pthread_detach(th);
+
+    rb_thread_call_without_gvl2(wait_getaddrinfo, arg, cancel_getaddrinfo, arg);
 
     int need_free = 0;
     rb_nativethread_lock_lock(&arg->lock);
